@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 # Use /hello-world URL
 def hello_world(request):
     """Return a 'Hello World' string using HttpResponse"""
-    pass
+    return HttpResponse("Hello world!")
 
 
 # Use /date URL
@@ -17,7 +17,13 @@ def current_date(request):
 
         i.e: 'Today is 5, January 2018'
     """
-    pass
+    curr_date = datetime.now().strftime('%d, %B %Y')
+    datearray = curr_date.split(",")
+    datearray[0] = int(datearray[0])
+    datearray[0] = str(datearray[0])
+    curr_date = ",".join(datearray)
+    # return HttpResponse("Today is {}".format(datearray))
+    return HttpResponse("Today is {}".format(curr_date))
 
 
 # Use URL with format /my-age/<year>/<month>/<day>
@@ -28,7 +34,18 @@ def my_age(request, year, month, day):
 
         i.e: /my-age/1992/1/20 returns 'Your age is 26 years old'
     """
-    pass
+    yyyy = year; mm = month; dd = day
+    
+    birthday = yyyy +","+ mm +","+  dd
+    formatted_date = "%Y,%m,%d"
+    birthday = datetime.strptime(birthday, formatted_date)
+    today = datetime.today()
+    age = today.year - birthday.year
+    
+    if (today.month < birthday.month) or ( (today.month == birthday.month) and (today.day < birthday.day) ):
+        age -= 1
+        
+    return HttpResponse("Your age is {} years old".format(age))
 
 
 # Use URL with format /next-birthday/<birthday>
@@ -38,7 +55,17 @@ def next_birthday(request, birthday):
         based on a given string GET parameter that comes in the URL, with the
         format 'YYYY-MM-DD'
     """
-    pass
+    todays_date = datetime.today()
+    date_of_birthday = datetime.strptime(birthday, "%Y-%m-%d")
+    next_birthday = date_of_birthday.replace(year=(todays_date.year))
+    
+    if (todays_date.month > date_of_birthday.month) or ( (todays_date.month == date_of_birthday.month) 
+    and ( todays_date.day >= date_of_birthday.day) ):
+        next_birthday = next_birthday.replace(year=(todays_date.year + 1))
+    
+    res = (next_birthday - todays_date).days + 1 ## add one to match google ¯\_(ツ)_/¯
+    
+    return HttpResponse("Days until next birthday: {}".format(res))
 
 
 # Use /profile URL
@@ -47,7 +74,11 @@ def profile(request):
         This view should render the template 'profile.html'. Make sure you return
         the correct context to make it work.
     """
-    pass
+    context = {
+        'my_name': 'Caleb Davenport',
+        'my_age': 25
+    }
+    return render(request, "profile.html", context)
 
 
 
@@ -83,8 +114,8 @@ AUTHORS_INFO = {
 
 # Use provided URLs, don't change them
 def authors(request):
-    pass
+    return render(request, "authors.html", AUTHORS_INFO)
 
 
 def author(request, authors_last_name):
-    pass
+    return render(request, "author.html", AUTHORS_INFO[authors_last_name])
